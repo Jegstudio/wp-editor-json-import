@@ -1,0 +1,10 @@
+# Folders to ignore
+.idea
+build
+release
+node_modules
+wp-editor-json-import/assets/js
+wp-editor-json-import/assets/css
+
+# Files to ignore
+package-lock.json
