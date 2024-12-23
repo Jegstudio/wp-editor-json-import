@@ -43,18 +43,20 @@ export const IconCloseSVG = ({ size = 16, ...props }) => {
 
 const recursiveArray = (blocks) => {
     return blocks.map(block => {
-        const { attributes, innerBlocks, innerHTML, name } = block;
+        const { attributes, innerBlocks, name } = block;
         const theInnerBlocks = recursiveArray(innerBlocks);
         let data = {
             attributes,
             name
         };
 
-        // Check if Inner HTML Exist.
-        if (innerHTML) {
+        if (name === 'gutenverse/column') {
             data = {
                 ...data,
-                innerHTML
+                attributes: {
+                    ...attributes,
+                    adjustSiblingColumn: false
+                }
             };
         }
 
@@ -72,6 +74,7 @@ const recursiveArray = (blocks) => {
 
 
 export const ImportModal = (props) => {
+    const delay = 100;
     const [value, setValue] = useState('');
     const [blocks, setBlockData] = useState({});
     const [finish, setFinished] = useState(false);
@@ -82,12 +85,24 @@ export const ImportModal = (props) => {
     } = props;
 
     const { updateBlockAttributes } = dispatch('core/block-editor');
+    const { getBlock } = select('core/block-editor');
 
     useEffect(() => {
         if (finish) {
             for (const clientId of Object.keys(blocks)) {
-                updateBlockAttributes(clientId, blocks[clientId]);
+                const block = getBlock(clientId);
+                if (block) {
+                    const { name } = block;
+                    if ('gutenverse/column' === name) {
+                        updateBlockAttributes(clientId, {
+                            adjustSiblingColumn: true
+                        });
+                    }
+                }
             }
+
+            setFinished(false);
+            setBlockData({});
         }
     }, [blocks, finish]);
 
@@ -110,7 +125,7 @@ export const ImportModal = (props) => {
                 await insertBlock(blockData);
             }
 
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, delay));
 
             setBlockData(value => {
                 return {
@@ -124,11 +139,12 @@ export const ImportModal = (props) => {
             }
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, delay));
     }
 
     const importContent = async (value) => {
         const data = JSON.parse(value);
+        setVisibility(false);
         await parseArrayToBlocks(data, null);
         setFinished(true);
     };
