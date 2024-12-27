@@ -2,7 +2,8 @@ import { useEffect, useState, createPortal } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import classnames from 'classnames';
 import { dispatch, select } from '@wordpress/data';
-import { createBlock } from '@wordpress/blocks';
+import { createBlock, getBlockType } from '@wordpress/blocks';
+import { equal } from '@sonofjs/js-compare';
 
 export const EscListener = ({ execute }) => {
     const escFunction = event => {
@@ -41,24 +42,33 @@ export const IconCloseSVG = ({ size = 16, ...props }) => {
     </svg>;
 };
 
+const rebuildingAttribute = (attributes, defaultAttributes, name) => {
+    const data = {};
+
+    Object.keys(attributes).map(key => {
+        const { default: initial } = defaultAttributes[key];
+        const value = attributes[key];
+        if ('elementId' === key) return;
+        if (!equal(value, initial)) data[key] = value;
+    });
+
+    if (name === 'gutenverse/column') {
+        data.adjustSiblingColumn = false;
+    }
+
+    return data;
+};
+
 const recursiveArray = (blocks) => {
     return blocks.map(block => {
         const { attributes, innerBlocks, name } = block;
+        const { attributes: defaultAttributes } = getBlockType(name);
         const theInnerBlocks = recursiveArray(innerBlocks);
+        let theAttributes = rebuildingAttribute(attributes, defaultAttributes, name);
         let data = {
-            attributes,
+            attributes: theAttributes,
             name
         };
-
-        if (name === 'gutenverse/column') {
-            data = {
-                ...data,
-                attributes: {
-                    ...attributes,
-                    adjustSiblingColumn: false
-                }
-            };
-        }
 
         // Check if Inner Block Exist.
         if (theInnerBlocks.length) {
@@ -152,7 +162,7 @@ export const ImportModal = (props) => {
     const exportContent = () => {
         const blocks = select('core/block-editor').getBlocks();
         const data = recursiveArray(blocks);
-        setValue(JSON.stringify(data, null, 4));
+        setValue(JSON.stringify(data, null));
     };
 
     return open && <div className={importerClass}>

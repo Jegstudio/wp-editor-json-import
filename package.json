@@ -29,6 +29,7 @@
 		"element-change": "^1.0.1"
 	},
 	"devDependencies": {
+		"@sonofjs/js-compare": "^1.0.7",
 		"@wordpress/babel-preset-default": "^8.3.0",
 		"@wordpress/scripts": "^28.3.0",
 		"babel-eslint": "^10.1.0",
