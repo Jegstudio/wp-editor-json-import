@@ -109,7 +109,7 @@
             height: 60px;
             border-top: 1px solid #ddd;
             padding: 0 15px;
-            justify-content: flex-end;
+            justify-content: space-between;
             display: flex;
 
             .import-content.button {
@@ -117,6 +117,16 @@
                 color: #fff;
                 padding: 1px 25px;
                 border: 1px solid #4040a2;
+
+                &.mode {
+                    background: rgb(224, 46, 99);
+                    color: #fff;
+                    border: 1px solid rgb(180, 19, 67);
+
+                    &:hover {
+                        background: rgb(180, 19, 67);
+                    }
+                }
 
                 &:hover {
                     background: #4c4ce1;

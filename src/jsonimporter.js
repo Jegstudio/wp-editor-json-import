@@ -91,7 +91,9 @@ export const ImportModal = (props) => {
     const {
         open,
         visible,
-        setVisibility
+        setVisibility,
+        mode,
+        setMode
     } = props;
 
     const { updateBlockAttributes } = dispatch('core/block-editor');
@@ -162,7 +164,21 @@ export const ImportModal = (props) => {
     const exportContent = () => {
         const blocks = select('core/block-editor').getBlocks();
         const data = recursiveArray(blocks);
-        setValue(JSON.stringify(data, null));
+        if (mode === 'tab') {
+            setValue(JSON.stringify(data, null, 4));
+        } else {
+            setValue(JSON.stringify(data, null));
+        }
+    };
+
+    const changeMode = () => {
+        setMode(mode === 'tab' ? 'plain' : 'tab');
+        const temporary = JSON.parse(value);
+        if (mode === 'tab') {
+            setValue(JSON.stringify(temporary, null));
+        } else {
+            setValue(JSON.stringify(temporary, null, 4));
+        }
     };
 
     return open && <div className={importerClass}>
@@ -186,12 +202,18 @@ export const ImportModal = (props) => {
                 />
             </div>
             <div className="import-modal-footer">
+                <div className="import-modal-length">
+                    {__('Length:', 'weji')} {value.length}
+                </div>
                 <div className="import-modal-action">
                     <div className="import-content button" onClick={() => importContent(value)}>
                         {__('Import', 'weji')}
                     </div>
                     <div className="import-content button" onClick={() => exportContent()}>
                         {__('Export', 'weji')}
+                    </div>
+                    <div className="import-content button mode" onClick={() => changeMode()}>
+                        {mode === 'tab' ? __('Tab Mode', 'weji') : __('Plain Mode', 'weji')}
                     </div>
                     <div className="import-content button clear" onClick={() => setValue('')}>
                         {__('Clear', 'weji')}
@@ -206,6 +228,7 @@ const JSONImporter = () => {
     const [injectLocation, setInjectLocation] = useState(null);
     const [open, setOpen] = useState(false);
     const [visible, setVisibility] = useState(true);
+    const [jsonMode, setJsonMode] = useState('tab');
 
     useEffect(() => {
         getEditSiteHeader().then(result => {
@@ -229,6 +252,8 @@ const JSONImporter = () => {
             setOpen={setOpen}
             visible={visible}
             setVisibility={setVisibility}
+            mode={jsonMode}
+            setMode={setJsonMode}
         />
         {injectLocation && createPortal(importButton, injectLocation)}
     </>;
